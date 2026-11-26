@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commission Calculator</title>
+
+<style>
+:root {
+    color-scheme: dark;
+    --background: #0f1117;
+    --panel: #1b1e27;
+    --border: #343844;
+    --text: #f5f5f5;
+    --muted: #a1a1aa;
+    --accent: #22c55e;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 24px 16px;
+    background: var(--background);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+}
+
+h1 {
+    font-size: 28px;
+    text-align: center;
+    margin: 12px 0 28px;
+}
+
+h3 {
+    font-size: 18px;
+    margin: 24px 0 12px;
+}
+
+.panel, .result {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    margin-bottom: 18px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+button {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.tabs button {
+    flex: 1;
+}
+
+button.active, button.primary {
+    background: var(--accent);
+    color: #08140c;
+    border-color: var(--accent);
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.actions .primary {
+    flex: 1;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 15px;
+    margin-top: 8px;
+    margin-bottom: 18px;
+    background: var(--background);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 17px;
+    outline: none;
+}
+
+input:focus, select:focus {
+    border-color: var(--accent);
+}
+
+input:disabled {
+    opacity: 0.5;
+}
+
+label {
+    font-weight: 600;
+}
+
+.check-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 56px;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 27px;
+    height: 27px;
+    border: 2px solid #777b88;
+    border-radius: 7px;
+    background: var(--background);
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 3px;
+    width: 6px;
+    height: 12px;
+    border: solid #08140c;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+}
+
+.big {
+    font-size: 38px;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 8px 0 18px;
+    overflow-wrap: anywhere;
+}
+
+.medium {
+    font-size: 27px;
+    font-weight: bold;
+    margin: 8px 0 18px;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.line strong {
+    text-align: right;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+}
+
+details {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 12px;
+}
+
+summary {
+    cursor: pointer;
+    line-height: 1.6;
+}
+
+#commissionResults,
+#roadmapResults {
+    scroll-margin-top: 20px;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+footer {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-top: 24px;
+}
+
+@media (max-width: 480px) {
+    .panel, .result {
+        padding: 18px;
+    }
+
+    .big {
+        font-size: 32px;
+    }
+
+    .line {
+        font-size: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Commission Calculator</h1>
+
+<div class="tabs">
+    <button id="commissionTab" class="active">
+        Commission
+    </button>
+
+    <button id="roadmapTab">
+        Roadmap
+    </button>
+</div>
+
+<div class="panel">
+
+    <label for="state">State</label>
+
+    <select id="state">
+        <option value="">Select your state</option>
+    </select>
+
+    <label for="stateRate">
+        Estimated state income tax (%)
+    </label>
+
+    <input type="number"
+           id="stateRate"
+           min="0"
+           max="30"
+           step="0.01"
+           disabled>
+
+</div>
+
+<!-- COMMISSION TAB -->
+
+<section id="commissionPage">
+
+<div class="panel">
+
+    <label for="gp">Monthly Gross Profit</label>
+
+    <input type="text"
+           id="gp"
+           inputmode="decimal"
+           autocomplete="off">
+
+    <h3>Targets</h3>
+
+    <label class="check-row">
+        PGA/BYOD
+        <input type="checkbox" id="pga">
+    </label>
+
+    <label class="check-row">
+        FWA/VHI
+        <input type="checkbox" id="fwa">
+    </label>
+
+    <h3>Escalators</h3>
+
+    <label class="check-row">
+        Accessory GP/Unit ≥ $75
+        <input type="checkbox" id="accessory">
+    </label>
+
+    <label class="check-row">
+        Protection GP/Unit ≥ $60
+        <input type="checkbox" id="protection">
+    </label>
+
+    <label class="check-row">
+        Plans &amp; Perks GP/Unit ≥ $30
+        <input type="checkbox" id="plans">
+    </label>
+
+    <label class="check-row">
+        Conversion ≥ 20%
+        <input type="checkbox" id="conversion">
+    </label>
+
+    <div class="actions">
+
+        <button id="clearCommission">
+            Clear
+        </button>
+
+        <button id="calculateButton" class="primary">
+            Calculate
+        </button>
+
+    </div>
+
+</div>
+
+<div class="result" id="commissionResults">
+
+    <div class="muted">
+        Net monthly commission
+    </div>
+
+    <div class="big" id="netMonthly">—</div>
+
+    <hr>
+
+    <div class="muted">
+        Estimated net paycheck · 10th and 25th
+    </div>
+
+    <div class="medium" id="netPaycheck">—</div>
+
+    <hr>
+
+    <div class="line">
+        <span>Final CP</span>
+        <strong id="finalCP">—</strong>
+    </div>
+
+    <div class="line">
+        <span>Federal tax</span>
+        <strong id="federalTax">—</strong>
+    </div>
+
+    <div class="line">
+        <span>State income tax</span>
+        <strong id="stateTax">—</strong>
+    </div>
+
+</div>
+
+</section>
+
+<!-- ROADMAP TAB -->
+
+<section id="roadmapPage" hidden>
+
+<div class="panel">
+
+    <label for="goal">Commission Goal</label>
+
+    <input type="text"
+           id="goal"
+           inputmode="decimal"
+           autocomplete="off">
+
+    <label for="period">Commission goal period</label>
+
+    <select id="period">
+        <option value="1">Monthly</option>
+        <option value="2">Per paycheck</option>
+    </select>
+
+    <label class="check-row">
+        After tax
+        <input type="checkbox" id="afterTax" checked>
+    </label>
+
+    <div class="actions">
+
+        <button id="clearRoadmap">
+            Clear
+        </button>
+
+        <button id="findRoutesButton" class="primary">
+            Find Routes
+        </button>
+
+    </div>
+
+</div>
+
+<div id="roadmapResults">
+
+    <div id="routes" class="muted">
+        Enter your commission goal.
+    </div>
+
+</div>
+
+</section>
+
+<!-- COMMISSION RULES -->
+
+<details>
+
+<summary>
+    <strong>Commission rules</strong>
+</summary>
+
+<div class="line">
+    <span>GP below $5,000</span>
+    <strong>0%</strong>
+</div>
+
+<div class="line">
+    <span>$5,000–$11,999.99</span>
+    <strong>2.5%</strong>
+</div>
+
+<div class="line">
+    <span>$12,000–$15,999.99</span>
+    <strong>5%</strong>
+</div>
+
+<div class="line">
+    <span>$16,000–$19,999.99</span>
+    <strong>10%</strong>
+</div>
+
+<div class="line">
+    <span>$20,000+</span>
+    <strong>12.5%</strong>
+</div>
+
+<hr>
+
+<div class="line">
+    <span>Each target</span>
+    <strong>+2%</strong>
+</div>
+
+<div class="line">
+    <span>0 escalators</span>
+    <strong>1× target bonus</strong>
+</div>
+
+<div class="line">
+    <span>1 escalator</span>
+    <strong>1.5× target bonus</strong>
+</div>
+
+<div class="line">
+    <span>2–4 escalators</span>
+    <strong>2× target bonus</strong>
+</div>
+
+<div class="line">
+    <span>Maximum CP</span>
+    <strong>20.5%</strong>
+</div>
+
+</details>
+
+<footer>
+Federal tax includes estimated federal income tax,
+Social Security and Medicare. Income tax rates are
+unverified planning estimates. Payroll taxes use 2026
+parameters. Excludes local taxes, benefits and base pay
+guarantees. This calculator does not collect or transmit
+your inputs.
+</footer>
+
+</div>
+
+<script>
+
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+// STATE TAX ESTIMATES
+
+const states = {
+    "Alabama": 5,
+    "Alaska": 0,
+    "Arizona": 2.5,
+    "Arkansas": 3.7,
+    "California": 6.6,
+    "Colorado": 4.4,
+    "Connecticut": 6.99,
+    "Delaware": 6.6,
+    "District of Columbia": 10.75,
+    "Florida": 0,
+    "Georgia": 5.19,
+    "Hawaii": 11,
+    "Idaho": 5.3,
+    "Illinois": 4.95,
+    "Indiana": 2.95,
+    "Iowa": 3.8,
+    "Kansas": 5,
+    "Kentucky": 3.5,
+    "Louisiana": 3,
+    "Maine": 5,
+    "Maryland": 6.5,
+    "Massachusetts": 5,
+    "Michigan": 4.25,
+    "Minnesota": 6.25,
+    "Mississippi": 4,
+    "Missouri": 4.7,
+    "Montana": 5,
+    "Nebraska": 5,
+    "Nevada": 0,
+    "New Hampshire": 0,
+    "New Jersey": 10.75,
+    "New Mexico": 5.9,
+    "New York": 11.7,
+    "North Carolina": 3.99,
+    "North Dakota": 1.5,
+    "Ohio": 3.5,
+    "Oklahoma": 4.5,
+    "Oregon": 8,
+    "Pennsylvania": 3.07,
+    "Rhode Island": 5.99,
+    "South Carolina": 6,
+    "South Dakota": 0,
+    "Tennessee": 0,
+    "Texas": 0,
+    "Utah": 4.5,
+    "Vermont": 6,
+    "Virginia": 5.75,
+    "Washington": 0,
+    "West Virginia": 4.58,
+    "Wisconsin": 7.65,
+    "Wyoming": 0
+};
+
+const federalBands = [
+    [0, 15000, 0.6],
+    [15000, 30000, 1.9],
+    [30000, 50000, 4.3],
+    [50000, 100000, 7.4],
+    [100000, 200000, 10.7],
+    [200000, 500000, 16.3],
+    [500000, Infinity, 25.5]
+];
+
+const tiers = [
+    [0, 499999, 0],
+    [500000, 1199999, 2.5],
+    [1200000, 1599999, 5],
+    [1600000, 1999999, 10],
+    [2000000, 10000000000, 12.5]
+];
+
+const targetIDs = [
+    "pga",
+    "fwa"
+];
+
+const escalatorIDs = [
+    "accessory",
+    "protection",
+    "plans",
+    "conversion"
+];
+
+const targetNames = [
+    "PGA/BYOD",
+    "FWA/VHI"
+];
+
+const escalatorNames = [
+    "Accessory GP/Unit ≥ $75",
+    "Protection GP/Unit ≥ $60",
+    "Plans &amp; Perks GP/Unit ≥ $30",
+    "Conversion ≥ 20%"
+];
+
+// POPULATE STATE DROPDOWN
+
+Object.keys(states).sort().forEach(name => {
+
+    const option = document.createElement("option");
+
+    option.value = name;
+    option.textContent = name;
+
+    $("state").appendChild(option);
+});
+
+// NUMBER FORMATTING
+
+function money(value) {
+
+    return value.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD"
+    });
+}
+
+function round(value) {
+    return Math.round(value * 100) / 100;
+}
+
+function formatCurrencyInput(input) {
+
+    const original = input.value;
+
+    const cursor = input.selectionStart ?? original.length;
+
+    const digitsBeforeCursor = (
+        original.slice(0, cursor).match(/[0-9.]/g) || []
+    ).length;
+
+    let raw = original.replace(/[^0-9.]/g, "");
+
+    if (!raw) {
+        input.value = "";
+        return;
+    }
+
+    const decimalPosition = raw.indexOf(".");
+
+    if (decimalPosition !== -1) {
+
+        raw =
+            raw.slice(0, decimalPosition + 1) +
+            raw.slice(decimalPosition + 1).replace(/\./g, "");
+    }
+
+    const parts = raw.split(".");
+
+    let whole = parts[0] || "0";
+
+    whole = whole.replace(/^0+(?=\d)/, "");
+
+    whole = whole.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        ","
+    );
+
+    let formatted = "$" + whole;
+
+    if (parts.length > 1) {
+        formatted += "." + parts[1].slice(0, 2);
+    }
+
+    input.value = formatted;
+
+    let count = 0;
+    let position = 1;
+
+    while (
+        position < formatted.length &&
+        count < digitsBeforeCursor
+    ) {
+
+        if (/[0-9.]/.test(formatted[position])) {
+            count++;
+        }
+
+        position++;
+    }
+
+    input.setSelectionRange(position, position);
+}
+
+function read(id) {
+
+    const value = $(id).value
+        .replace(/[$,]/g, "")
+        .trim();
+
+    if (value === "") return null;
+
+    const number = Number(value);
+
+    return Number.isFinite(number) &&
+           number >= 0 &&
+           number <= 100000000
+           ? number : null;
+}
+
+function getStateRate() {
+
+    const rate = read("stateRate");
+
+    if (
+        !$("state").value ||
+        rate === null ||
+        rate > 30
+    ) {
+        return null;
+    }
+
+    return rate;
+}
+
+// COMMISSION CALCULATIONS
+
+function baseCP(gpCents) {
+
+    return tiers.find(t =>
+        gpCents >= t[0] &&
+        gpCents <= t[1]
+    )[2];
+}
+
+function finalRate(base, targets, escalators) {
+
+    const multiplier =
+        escalators === 0 ? 1 :
+        escalators === 1 ? 1.5 : 2;
+
+    return base + targets * 2 * multiplier;
+}
+
+function calculate(gpCents, rate) {
+
+    const gross =
+        Math.round(gpCents * rate / 100) / 100;
+
+    const annual = round(gross * 12);
+
+    const band = federalBands.find(b =>
+        annual >= b[0] &&
+        annual < b[1]
+    );
+
+    const federalIncomeTax =
+        annual * band[2] / 100;
+
+    const socialSecurity =
+        Math.min(annual, 184500) * 0.062;
+
+    const medicare =
+        annual * 0.0145 +
+        Math.max(0, annual - 200000) * 0.009;
+
+    const federalTax = round(
+        (
+            federalIncomeTax +
+            socialSecurity +
+            medicare
+        ) / 12
+    );
+
+    const stateRate = getStateRate();
+
+    const stateTax = stateRate === null
+        ? null
+        : round(gross * stateRate / 100);
+
+    const net = stateTax === null
+        ? null
+        : round(gross - federalTax - stateTax);
+
+    return {
+        gross,
+        annual,
+        federalTax,
+        stateTax,
+        net
+    };
+}
+
+// COMMISSION RESULTS
+
+function updateCommission() {
+
+    const gp = read("gp");
+
+    if (gp === null) {
+
+        [
+            "netMonthly",
+            "netPaycheck",
+            "finalCP",
+            "federalTax",
+            "stateTax"
+        ].forEach(id => {
+            $(id).textContent = "—";
+        });
+
+        return;
+    }
+
+    const gpCents = Math.round(gp * 100);
+
+    const targets = targetIDs.filter(
+        id => $(id).checked
+    ).length;
+
+    const escalators = escalatorIDs.filter(
+        id => $(id).checked
+    ).length;
+
+    const rate = finalRate(
+        baseCP(gpCents),
+        targets,
+        escalators
+    );
+
+    const result = calculate(gpCents, rate);
+
+    $("finalCP").textContent = rate + "%";
+
+    $("federalTax").textContent =
+        money(result.federalTax);
+
+    $("stateTax").textContent =
+        result.stateTax === null
+        ? "—"
+        : money(result.stateTax);
+
+    $("netMonthly").textContent =
+        result.net === null
+        ? "Select state"
+        : money(result.net);
+
+    $("netPaycheck").textContent =
+        result.net === null
+        ? "—"
+        : money(result.net / 2);
+}
+
+// ROADMAP SEARCH
+
+function lowerBound(lo, hi, predicate) {
+
+    let left = lo;
+    let right = hi + 1;
+
+    while (left < right) {
+
+        const middle = Math.floor(
+            (left + right) / 2
+        );
+
+        if (predicate(middle)) {
+            right = middle;
+        } else {
+            left = middle + 1;
+        }
+    }
+
+    return left;
+}
+
+function combinations(names, count) {
+
+    const results = [];
+
+    for (
+        let mask = 0;
+        mask < 2 ** names.length;
+        mask++
+    ) {
+
+        const selected = names.filter(
+            (_, i) => mask & (1 << i)
+        );
+
+        if (selected.length === count) {
+
+            results.push(
+                selected.join(" + ") || "None"
+            );
+        }
+    }
+
+    return results.join("<br>");
+}
+
+function line(label, value) {
+
+    return '<div class="line"><span>' +
+        label +
+        '</span><strong>' +
+        value +
+        '</strong></div>';
+}
+
+function updateRoadmap() {
+
+    const rawGoal = read("goal");
+    const afterTax = $("afterTax").checked;
+    const box = $("routes");
+
+    if (!rawGoal) {
+
+        box.textContent =
+            "Enter your commission goal.";
+
+        return;
+    }
+
+    if (afterTax && getStateRate() === null) {
+
+        box.textContent =
+            "Select your state first.";
+
+        return;
+    }
+
+    const goal = round(
+        rawGoal * Number($("period").value)
+    );
+
+    const results = [];
+
+    for (const [lo, hi, base] of tiers) {
+
+        for (
+            let targets = 0;
+            targets <= 2;
+            targets++
+        ) {
+
+            const maxEscalators =
+                targets === 0 ? 0 : 2;
+
+            for (
+                let escalators = 0;
+                escalators <= maxEscalators;
+                escalators++
+            ) {
+
+                const rate = finalRate(
+                    base,
+                    targets,
+                    escalators
+                );
+
+                if (rate === 0) continue;
+
+                const value = cents => {
+
+                    const result = calculate(
+                        cents,
+                        rate
+                    );
+
+                    return afterTax
+                        ? result.net
+                        : result.gross;
+                };
+
+                let best = null;
+
+                for (const band of federalBands) {
+
+                    const low = lowerBound(
+                        lo,
+                        hi,
+                        cents =>
+                            calculate(cents, rate)
+                            .annual >= band[0]
+                    );
+
+                    const high =
+                        band[1] === Infinity
+                        ? hi
+                        : lowerBound(
+                            lo,
+                            hi,
+                            cents =>
+                                calculate(cents, rate)
+                                .annual >= band[1]
+                        ) - 1;
+
+                    if (low > high || low > hi) {
+                        continue;
+                    }
+
+                    if (value(high) + 0.02 < goal) {
+                        continue;
+                    }
+
+                    const start = lowerBound(
+                        low,
+                        high,
+                        cents =>
+                            value(cents) >= goal - 0.02
+                    );
+
+                    for (
+                        let cents = start;
+                        cents <= high &&
+                        cents <= start + 500;
+                        cents++
+                    ) {
+
+                        if (value(cents) >= goal) {
+
+                            if (
+                                best === null ||
+                                cents < best
+                            ) {
+                                best = cents;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
+                if (best !== null) {
+
+                    results.push({
+                        gp: best / 100,
+                        targets,
+                        escalators,
+                        rate,
+                        result: calculate(best, rate)
+                    });
+                }
+            }
+        }
+    }
+
+    results.sort((a, b) =>
+        a.gp - b.gp || b.rate - a.rate
+    );
+
+    if (!results.length) {
+
+        box.textContent =
+            "No qualifying routes found.";
+
+        return;
+    }
+
+    let html =
+        '<div class="result">' +
+        '<div class="muted">' +
+        'Minimum monthly GP required' +
+        '</div>' +
+        '<div class="big">' +
+        money(results[0].gp) +
+        '</div>' +
+        results.length +
+        ' qualifying routes' +
+        line("Monthly commission goal", money(goal)) +
+        '</div>';
+
+    results.forEach((route, index) => {
+
+        const result = route.result;
+
+        const escalatorLabel =
+            route.targets === 0
+            ? "Any number of"
+            : route.escalators === 2
+                ? "2+"
+                : route.escalators;
+
+        html += '<details ' +
+            (index === 0 ? 'open' : '') +
+            '>';
+
+        html += '<summary><strong>' +
+            money(route.gp) +
+            ' GP · ' +
+            route.rate +
+            '% CP</strong><br>' +
+            '<span class="muted">' +
+            route.targets +
+            ' targets · ' +
+            escalatorLabel +
+            ' escalators</span></summary>';
+
+        html += '<hr>';
+
+        html += line(
+            "Net monthly commission",
+            result.net === null
+                ? "—"
+                : money(result.net)
+        );
+
+        html += line(
+            "Net per paycheck",
+            result.net === null
+                ? "—"
+                : money(result.net / 2)
+        );
+
+        if (!afterTax) {
+
+            html += line(
+                "Before-tax commission",
+                money(result.gross)
+            );
+        }
+
+        html += line(
+            "Final CP",
+            route.rate + "%"
+        );
+
+        html += line(
+            "Federal tax",
+            money(result.federalTax)
+        );
+
+        html += line(
+            "State income tax",
+            result.stateTax === null
+                ? "—"
+                : money(result.stateTax)
+        );
+
+        html += '<h3>Target options</h3>';
+
+        html += combinations(
+            targetNames,
+            route.targets
+        );
+
+        html += '<h3>Escalator options</h3>';
+
+        html += route.targets === 0
+            ? "Any combination, including none."
+            : combinations(
+                escalatorNames,
+                route.escalators
+            );
+
+        if (
+            route.targets > 0 &&
+            route.escalators === 2
+        ) {
+
+            html += '<p class="muted">' +
+                'Any listed pair qualifies. ' +
+                'Additional escalators do not ' +
+                'increase commission.</p>';
+        }
+
+        html += '</details>';
+    });
+
+    box.innerHTML = html;
+}
+
+// SCROLLING
+
+function scrollToResults(id) {
+
+    const reducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    $(id).scrollIntoView({
+        behavior: reducedMotion ? "instant" : "smooth",
+        block: "start"
+    });
+}
+
+// LIVE UPDATES
+
+function updateAll() {
+    updateCommission();
+    updateRoadmap();
+}
+
+$("state").addEventListener("change", () => {
+
+    const name = $("state").value;
+
+    $("stateRate").disabled = !name;
+
+    $("stateRate").value = name
+        ? states[name]
+        : "";
+
+    updateAll();
+});
+
+$("stateRate").addEventListener(
+    "input",
+    updateAll
+);
+
+$("gp").addEventListener("input", () => {
+
+    formatCurrencyInput($("gp"));
+    updateCommission();
+});
+
+$("goal").addEventListener("input", () => {
+
+    formatCurrencyInput($("goal"));
+    updateRoadmap();
+});
+
+[...targetIDs, ...escalatorIDs].forEach(id => {
+
+    $(id).addEventListener(
+        "change",
+        updateCommission
+    );
+});
+
+$("period").addEventListener(
+    "change",
+    updateRoadmap
+);
+
+$("afterTax").addEventListener(
+    "change",
+    updateRoadmap
+);
+
+// CALCULATE BUTTON
+
+$("calculateButton").addEventListener("click", () => {
+
+    if (read("gp") === null) {
+
+        $("gp").focus();
+        return;
+    }
+
+    if (getStateRate() === null) {
+
+        $("state").focus();
+        return;
+    }
+
+    updateCommission();
+
+    document.activeElement.blur();
+
+    scrollToResults("commissionResults");
+});
+
+// FIND ROUTES BUTTON
+
+$("findRoutesButton").addEventListener("click", () => {
+
+    if (!read("goal")) {
+
+        $("goal").focus();
+        return;
+    }
+
+    if (
+        $("afterTax").checked &&
+        getStateRate() === null
+    ) {
+
+        $("state").focus();
+        return;
+    }
+
+    updateRoadmap();
+
+    document.activeElement.blur();
+
+    scrollToResults("roadmapResults");
+});
+
+// TAB NAVIGATION
+
+$("commissionTab").addEventListener("click", () => {
+
+    $("commissionPage").hidden = false;
+    $("roadmapPage").hidden = true;
+
+    $("commissionTab").classList.add("active");
+    $("roadmapTab").classList.remove("active");
+});
+
+$("roadmapTab").addEventListener("click", () => {
+
+    $("commissionPage").hidden = true;
+    $("roadmapPage").hidden = false;
+
+    $("commissionTab").classList.remove("active");
+    $("roadmapTab").classList.add("active");
+});
+
+// CLEAR BUTTONS
+
+$("clearCommission").addEventListener("click", () => {
+
+    $("gp").value = "";
+
+    [...targetIDs, ...escalatorIDs].forEach(id => {
+
+        $(id).checked = false;
+    });
+
+    updateCommission();
+});
+
+$("clearRoadmap").addEventListener("click", () => {
+
+    $("goal").value = "";
+
+    updateRoadmap();
+});
+
+updateAll();
+
+</script>
+
+</body>
+</html>
