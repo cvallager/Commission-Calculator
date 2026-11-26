@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Commission Calculator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commission Calculator</title>
 
 <style>
+
 :root {
     color-scheme: dark;
     --background: #101010;
@@ -22,7 +23,6 @@
 }
 
 html {
-    scroll-behavior: smooth;
     scrollbar-color: #454545 var(--background);
 }
 
@@ -35,7 +35,6 @@ body {
                  "Segoe UI Variable", "Segoe UI",
                  system-ui, sans-serif;
     font-size: 15px;
-    font-weight: 400;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
@@ -122,6 +121,16 @@ button.primary:hover {
 
 .actions .primary {
     flex: 1;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+    min-height: 50px;
 }
 
 input[type="text"],
@@ -289,9 +298,20 @@ summary::marker {
     color: var(--accent);
 }
 
-#commissionResults,
-#roadmapResults {
-    scroll-margin-top: 24px;
+.option {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.option:last-child {
+    border-bottom: none;
+}
+
+.error {
+    color: #FF777C;
+    font-size: 13px;
+    margin-top: 12px;
 }
 
 [hidden] {
@@ -306,6 +326,7 @@ footer {
 }
 
 @media (max-width: 480px) {
+
     body {
         padding: 20px 14px;
     }
@@ -324,14 +345,12 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
-    }
 
     * {
         transition: none !important;
     }
 }
+
 </style>
 </head>
 
@@ -339,251 +358,326 @@ footer {
 
 <div class="container">
 
-<div class="tabs">
-    <button id="commissionTab" class="active">
-        Commission
+<!-- CALCULATOR VIEW -->
+
+<main id="calculatorView">
+
+    <div class="tabs">
+
+        <button id="commissionTab"
+                class="active"
+                aria-pressed="true">
+            Commission
+        </button>
+
+        <button id="roadmapTab"
+                aria-pressed="false">
+            Roadmap
+        </button>
+
+    </div>
+
+    <!-- STATE SELECTION -->
+
+    <div class="panel">
+
+        <label for="state">State</label>
+
+        <select id="state">
+            <option value="">Select your state</option>
+        </select>
+
+        <label for="stateRate">
+            Estimated state income tax (%)
+        </label>
+
+        <input type="number"
+               id="stateRate"
+               min="0"
+               max="30"
+               step="0.01"
+               disabled>
+
+    </div>
+
+    <!-- COMMISSION INPUTS -->
+
+    <section id="commissionPage">
+
+        <div class="panel">
+
+            <label for="gp">Monthly Gross Profit</label>
+
+            <input type="text"
+                   id="gp"
+                   inputmode="decimal"
+                   autocomplete="off">
+
+            <h3>Targets</h3>
+
+            <label class="check-row">
+                PGA/BYOD
+                <input type="checkbox" id="pga">
+            </label>
+
+            <label class="check-row">
+                FWA/VHI
+                <input type="checkbox" id="fwa">
+            </label>
+
+            <h3>Escalators</h3>
+
+            <label class="check-row">
+                Accessory GP/Unit ≥ $75
+                <input type="checkbox" id="accessory">
+            </label>
+
+            <label class="check-row">
+                Protection GP/Unit ≥ $60
+                <input type="checkbox" id="protection">
+            </label>
+
+            <label class="check-row">
+                Plans &amp; Perks GP/Unit ≥ $30
+                <input type="checkbox" id="plans">
+            </label>
+
+            <label class="check-row">
+                Conversion ≥ 20%
+                <input type="checkbox" id="conversion">
+            </label>
+
+            <div id="commissionError"
+                 class="error"
+                 role="alert"
+                 hidden>
+            </div>
+
+            <div class="actions">
+
+                <button id="clearCommission">
+                    Clear
+                </button>
+
+                <button id="calculateButton"
+                        class="primary">
+                    Calculate
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- ROADMAP INPUTS -->
+
+    <section id="roadmapPage" hidden>
+
+        <div class="panel">
+
+            <label for="goal">Commission Goal</label>
+
+            <input type="text"
+                   id="goal"
+                   inputmode="decimal"
+                   autocomplete="off">
+
+            <label for="period">
+                Commission goal period
+            </label>
+
+            <select id="period">
+
+                <option value="1">
+                    Monthly
+                </option>
+
+                <option value="2">
+                    Per paycheck
+                </option>
+
+            </select>
+
+            <label class="check-row">
+                After tax
+                <input type="checkbox"
+                       id="afterTax"
+                       checked>
+            </label>
+
+            <div id="roadmapError"
+                 class="error"
+                 role="alert"
+                 hidden>
+            </div>
+
+            <div class="actions">
+
+                <button id="clearRoadmap">
+                    Clear
+                </button>
+
+                <button id="findRoutesButton"
+                        class="primary">
+                    Find Routes
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- COMMISSION RULES -->
+
+    <details>
+
+        <summary>
+            <strong>Commission rules</strong>
+        </summary>
+
+        <div class="line">
+            <span>GP below $5,000</span>
+            <strong>0%</strong>
+        </div>
+
+        <div class="line">
+            <span>$5,000–$11,999.99</span>
+            <strong>2.5%</strong>
+        </div>
+
+        <div class="line">
+            <span>$12,000–$15,999.99</span>
+            <strong>5%</strong>
+        </div>
+
+        <div class="line">
+            <span>$16,000–$19,999.99</span>
+            <strong>10%</strong>
+        </div>
+
+        <div class="line">
+            <span>$20,000+</span>
+            <strong>12.5%</strong>
+        </div>
+
+        <hr>
+
+        <div class="line">
+            <span>Each target</span>
+            <strong>+2%</strong>
+        </div>
+
+        <div class="line">
+            <span>0 escalators</span>
+            <strong>1× target bonus</strong>
+        </div>
+
+        <div class="line">
+            <span>1 escalator</span>
+            <strong>1.5× target bonus</strong>
+        </div>
+
+        <div class="line">
+            <span>2–4 escalators</span>
+            <strong>2× target bonus</strong>
+        </div>
+
+        <div class="line">
+            <span>Maximum CP</span>
+            <strong>20.5%</strong>
+        </div>
+
+    </details>
+
+</main>
+
+<!-- DEDICATED RESULTS VIEW -->
+
+<main id="resultsView" hidden>
+
+    <button id="backButton"
+            class="back-button">
+
+        <span aria-hidden="true">←</span>
+        Back to Calculator
+
     </button>
 
-    <button id="roadmapTab">
-        Roadmap
-    </button>
-</div>
+    <!-- COMMISSION RESULTS -->
 
-<div class="panel">
+    <section id="commissionResults" hidden>
 
-    <label for="state">State</label>
+        <div class="result">
 
-    <select id="state">
-        <option value="">Select your state</option>
-    </select>
+            <div class="muted">
+                Net monthly commission
+            </div>
 
-    <label for="stateRate">
-        Estimated state income tax (%)
-    </label>
+            <div class="big" id="netMonthly">
+                —
+            </div>
 
-    <input type="number"
-           id="stateRate"
-           min="0"
-           max="30"
-           step="0.01"
-           disabled>
+            <hr>
 
-</div>
+            <div class="muted">
+                Estimated net paycheck · 10th and 25th
+            </div>
 
-<!-- COMMISSION TAB -->
+            <div class="medium" id="netPaycheck">
+                —
+            </div>
 
-<section id="commissionPage">
+            <hr>
 
-<div class="panel">
+            <div class="line">
 
-    <label for="gp">Monthly Gross Profit</label>
+                <span>Final CP</span>
 
-    <input type="text"
-           id="gp"
-           inputmode="decimal"
-           autocomplete="off">
+                <strong id="finalCP">—</strong>
 
-    <h3>Targets</h3>
+            </div>
 
-    <label class="check-row">
-        PGA/BYOD
-        <input type="checkbox" id="pga">
-    </label>
+            <div class="line">
 
-    <label class="check-row">
-        FWA/VHI
-        <input type="checkbox" id="fwa">
-    </label>
+                <span>Federal tax</span>
 
-    <h3>Escalators</h3>
+                <strong id="federalTax">—</strong>
 
-    <label class="check-row">
-        Accessory GP/Unit ≥ $75
-        <input type="checkbox" id="accessory">
-    </label>
+            </div>
 
-    <label class="check-row">
-        Protection GP/Unit ≥ $60
-        <input type="checkbox" id="protection">
-    </label>
+            <div class="line">
 
-    <label class="check-row">
-        Plans &amp; Perks GP/Unit ≥ $30
-        <input type="checkbox" id="plans">
-    </label>
+                <span>State income tax</span>
 
-    <label class="check-row">
-        Conversion ≥ 20%
-        <input type="checkbox" id="conversion">
-    </label>
+                <strong id="stateTax">—</strong>
 
-    <div class="actions">
+            </div>
 
-        <button id="clearCommission">
-            Clear
-        </button>
+        </div>
 
-        <button id="calculateButton" class="primary">
-            Calculate
-        </button>
+    </section>
 
-    </div>
+    <!-- ROADMAP RESULTS -->
 
-</div>
+    <section id="roadmapResults" hidden>
 
-<div class="result" id="commissionResults">
+        <div id="routes"></div>
 
-    <div class="muted">
-        Net monthly commission
-    </div>
+    </section>
 
-    <div class="big" id="netMonthly">—</div>
-
-    <hr>
-
-    <div class="muted">
-        Estimated net paycheck · 10th and 25th
-    </div>
-
-    <div class="medium" id="netPaycheck">—</div>
-
-    <hr>
-
-    <div class="line">
-        <span>Final CP</span>
-        <strong id="finalCP">—</strong>
-    </div>
-
-    <div class="line">
-        <span>Federal tax</span>
-        <strong id="federalTax">—</strong>
-    </div>
-
-    <div class="line">
-        <span>State income tax</span>
-        <strong id="stateTax">—</strong>
-    </div>
-
-</div>
-
-</section>
-
-<!-- ROADMAP TAB -->
-
-<section id="roadmapPage" hidden>
-
-<div class="panel">
-
-    <label for="goal">Commission Goal</label>
-
-    <input type="text"
-           id="goal"
-           inputmode="decimal"
-           autocomplete="off">
-
-    <label for="period">Commission goal period</label>
-
-    <select id="period">
-        <option value="1">Monthly</option>
-        <option value="2">Per paycheck</option>
-    </select>
-
-    <label class="check-row">
-        After tax
-        <input type="checkbox" id="afterTax" checked>
-    </label>
-
-    <div class="actions">
-
-        <button id="clearRoadmap">
-            Clear
-        </button>
-
-        <button id="findRoutesButton" class="primary">
-            Find Routes
-        </button>
-
-    </div>
-
-</div>
-
-<div id="roadmapResults">
-
-    <div id="routes" class="muted">
-
-</div>
-
-</section>
-
-<!-- COMMISSION RULES -->
-
-<details>
-
-<summary>
-    <strong>Commission rules</strong>
-</summary>
-
-<div class="line">
-    <span>GP below $5,000</span>
-    <strong>0%</strong>
-</div>
-
-<div class="line">
-    <span>$5,000–$11,999.99</span>
-    <strong>2.5%</strong>
-</div>
-
-<div class="line">
-    <span>$12,000–$15,999.99</span>
-    <strong>5%</strong>
-</div>
-
-<div class="line">
-    <span>$16,000–$19,999.99</span>
-    <strong>10%</strong>
-</div>
-
-<div class="line">
-    <span>$20,000+</span>
-    <strong>12.5%</strong>
-</div>
-
-<hr>
-
-<div class="line">
-    <span>Each target</span>
-    <strong>+2%</strong>
-</div>
-
-<div class="line">
-    <span>0 escalators</span>
-    <strong>1× target bonus</strong>
-</div>
-
-<div class="line">
-    <span>1 escalator</span>
-    <strong>1.5× target bonus</strong>
-</div>
-
-<div class="line">
-    <span>2–4 escalators</span>
-    <strong>2× target bonus</strong>
-</div>
-
-<div class="line">
-    <span>Maximum CP</span>
-    <strong>20.5%</strong>
-</div>
-
-</details>
+</main>
 
 <footer>
-Federal tax includes estimated federal income tax,
-Social Security and Medicare. Income tax rates are
-unverified planning estimates. Payroll taxes use 2026
-parameters. Excludes local taxes, benefits and base pay
-guarantees. This calculator does not collect or transmit
-your inputs.
+
+    Federal tax includes estimated federal income tax,
+    Social Security and Medicare. Income tax rates are
+    unverified planning estimates. Payroll taxes use 2026
+    parameters. Excludes local taxes, benefits and base pay
+    guarantees. This calculator does not collect or transmit
+    your inputs.
+
 </footer>
 
 </div>
@@ -650,6 +744,8 @@ const states = {
     "Wyoming": 0
 };
 
+// FEDERAL INCOME TAX ESTIMATES
+
 const federalBands = [
     [0, 15000, 0.6],
     [15000, 30000, 1.9],
@@ -659,6 +755,8 @@ const federalBands = [
     [200000, 500000, 16.3],
     [500000, Infinity, 25.5]
 ];
+
+// COMMISSION TIERS IN CENTS
 
 const tiers = [
     [0, 499999, 0],
@@ -702,9 +800,10 @@ Object.keys(states).sort().forEach(name => {
     option.textContent = name;
 
     $("state").appendChild(option);
+
 });
 
-// NUMBER FORMATTING
+// CURRENCY FORMATTING
 
 function money(value) {
 
@@ -712,27 +811,34 @@ function money(value) {
         style: "currency",
         currency: "USD"
     });
+
 }
 
 function round(value) {
+
     return Math.round(value * 100) / 100;
+
 }
 
 function formatCurrencyInput(input) {
 
     const original = input.value;
 
-    const cursor = input.selectionStart ?? original.length;
+    const cursor =
+        input.selectionStart ?? original.length;
 
     const digitsBeforeCursor = (
-        original.slice(0, cursor).match(/[0-9.]/g) || []
+        original.slice(0, cursor)
+                .match(/[0-9.]/g) || []
     ).length;
 
     let raw = original.replace(/[^0-9.]/g, "");
 
     if (!raw) {
+
         input.value = "";
         return;
+
     }
 
     const decimalPosition = raw.indexOf(".");
@@ -741,7 +847,9 @@ function formatCurrencyInput(input) {
 
         raw =
             raw.slice(0, decimalPosition + 1) +
-            raw.slice(decimalPosition + 1).replace(/\./g, "");
+            raw.slice(decimalPosition + 1)
+               .replace(/\./g, "");
+
     }
 
     const parts = raw.split(".");
@@ -758,7 +866,9 @@ function formatCurrencyInput(input) {
     let formatted = "$" + whole;
 
     if (parts.length > 1) {
+
         formatted += "." + parts[1].slice(0, 2);
+
     }
 
     input.value = formatted;
@@ -772,14 +882,20 @@ function formatCurrencyInput(input) {
     ) {
 
         if (/[0-9.]/.test(formatted[position])) {
+
             count++;
+
         }
 
         position++;
+
     }
 
     input.setSelectionRange(position, position);
+
 }
+
+// READ NUMERIC INPUTS
 
 function read(id) {
 
@@ -795,6 +911,7 @@ function read(id) {
            number >= 0 &&
            number <= 100000000
            ? number : null;
+
 }
 
 function getStateRate() {
@@ -806,10 +923,13 @@ function getStateRate() {
         rate === null ||
         rate > 30
     ) {
+
         return null;
+
     }
 
     return rate;
+
 }
 
 // COMMISSION CALCULATIONS
@@ -820,6 +940,7 @@ function baseCP(gpCents) {
         gpCents >= t[0] &&
         gpCents <= t[1]
     )[2];
+
 }
 
 function finalRate(base, targets, escalators) {
@@ -829,6 +950,7 @@ function finalRate(base, targets, escalators) {
         escalators === 1 ? 1.5 : 2;
 
     return base + targets * 2 * multiplier;
+
 }
 
 function calculate(gpCents, rate) {
@@ -878,28 +1000,16 @@ function calculate(gpCents, rate) {
         stateTax,
         net
     };
+
 }
 
-// COMMISSION RESULTS
+// GENERATE COMMISSION RESULTS
 
 function updateCommission() {
 
     const gp = read("gp");
 
-    if (gp === null) {
-
-        [
-            "netMonthly",
-            "netPaycheck",
-            "finalCP",
-            "federalTax",
-            "stateTax"
-        ].forEach(id => {
-            $(id).textContent = "—";
-        });
-
-        return;
-    }
+    if (gp === null) return;
 
     const gpCents = Math.round(gp * 100);
 
@@ -931,13 +1041,14 @@ function updateCommission() {
 
     $("netMonthly").textContent =
         result.net === null
-        ? "Select state"
+        ? "—"
         : money(result.net);
 
     $("netPaycheck").textContent =
         result.net === null
         ? "—"
         : money(result.net / 2);
+
 }
 
 // ROADMAP SEARCH
@@ -954,13 +1065,19 @@ function lowerBound(lo, hi, predicate) {
         );
 
         if (predicate(middle)) {
+
             right = middle;
+
         } else {
+
             left = middle + 1;
+
         }
+
     }
 
     return left;
+
 }
 
 function combinations(names, count) {
@@ -980,12 +1097,17 @@ function combinations(names, count) {
         if (selected.length === count) {
 
             results.push(
-                selected.join(" + ") || "None"
+                '<div class="option">' +
+                (selected.join(" + ") || "None") +
+                '</div>'
             );
+
         }
+
     }
 
-    return results.join("<br>");
+    return results.join("");
+
 }
 
 function line(label, value) {
@@ -995,6 +1117,7 @@ function line(label, value) {
         '</span><strong>' +
         value +
         '</strong></div>';
+
 }
 
 function updateRoadmap() {
@@ -1003,18 +1126,14 @@ function updateRoadmap() {
     const afterTax = $("afterTax").checked;
     const box = $("routes");
 
-    if (!rawGoal) {
-    box.textContent = "";
-    return;
-}
+    box.innerHTML = "";
 
-    if (afterTax && getStateRate() === null) {
+    if (!rawGoal) return;
 
-        box.textContent =
-            "Select your state first.";
-
-        return;
-    }
+    if (
+        afterTax &&
+        getStateRate() === null
+    ) return;
 
     const goal = round(
         rawGoal * Number($("period").value)
@@ -1057,6 +1176,7 @@ function updateRoadmap() {
                     return afterTax
                         ? result.net
                         : result.gross;
+
                 };
 
                 let best = null;
@@ -1082,13 +1202,14 @@ function updateRoadmap() {
                                 .annual >= band[1]
                         ) - 1;
 
-                    if (low > high || low > hi) {
-                        continue;
-                    }
+                    if (
+                        low > high ||
+                        low > hi
+                    ) continue;
 
-                    if (value(high) + 0.02 < goal) {
-                        continue;
-                    }
+                    if (
+                        value(high) + 0.02 < goal
+                    ) continue;
 
                     const start = lowerBound(
                         low,
@@ -1110,12 +1231,17 @@ function updateRoadmap() {
                                 best === null ||
                                 cents < best
                             ) {
+
                                 best = cents;
+
                             }
 
                             break;
+
                         }
+
                     }
+
                 }
 
                 if (best !== null) {
@@ -1127,9 +1253,13 @@ function updateRoadmap() {
                         rate,
                         result: calculate(best, rate)
                     });
+
                 }
+
             }
+
         }
+
     }
 
     results.sort((a, b) =>
@@ -1138,10 +1268,13 @@ function updateRoadmap() {
 
     if (!results.length) {
 
-        box.textContent =
-            "No qualifying routes found.";
+        box.innerHTML =
+            '<div class="panel">' +
+            'No qualifying routes found.' +
+            '</div>';
 
         return;
+
     }
 
     let html =
@@ -1152,9 +1285,14 @@ function updateRoadmap() {
         '<div class="big">' +
         money(results[0].gp) +
         '</div>' +
+        '<div class="muted">' +
         results.length +
         ' qualifying routes' +
-        line("Monthly commission goal", money(goal)) +
+        '</div>' +
+        line(
+            "Monthly commission goal",
+            money(goal)
+        ) +
         '</div>';
 
     results.forEach((route, index) => {
@@ -1205,6 +1343,7 @@ function updateRoadmap() {
                 "Before-tax commission",
                 money(result.gross)
             );
+
         }
 
         html += line(
@@ -1249,34 +1388,73 @@ function updateRoadmap() {
                 'Any listed pair qualifies. ' +
                 'Additional escalators do not ' +
                 'increase commission.</p>';
+
         }
 
         html += '</details>';
+
     });
 
     box.innerHTML = html;
+
 }
 
-// SCROLLING
+// VIEW NAVIGATION
 
-function scrollToResults(id) {
+function showResults(type) {
 
-    const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-    ).matches;
+    document.activeElement.blur();
 
-    $(id).scrollIntoView({
-        behavior: reducedMotion ? "instant" : "smooth",
-        block: "start"
+    $("calculatorView").hidden = true;
+
+    $("commissionResults").hidden =
+        type !== "commission";
+
+    $("roadmapResults").hidden =
+        type !== "roadmap";
+
+    $("resultsView").hidden = false;
+
+    window.scrollTo(0, 0);
+
+    $("backButton").focus({
+        preventScroll: true
     });
+
 }
 
-// LIVE UPDATES
+function backToCalculator() {
 
-function updateAll() {
-    updateCommission();
-    updateRoadmap();
+    $("resultsView").hidden = true;
+
+    $("calculatorView").hidden = false;
+
+    window.scrollTo(0, 0);
+
 }
+
+$("backButton").addEventListener(
+    "click",
+    backToCalculator
+);
+
+// ERROR MESSAGES
+
+function showError(id, message) {
+
+    $(id).textContent = message;
+    $(id).hidden = false;
+
+}
+
+function clearErrors() {
+
+    $("commissionError").hidden = true;
+    $("roadmapError").hidden = true;
+
+}
+
+// STATE SELECTION
 
 $("state").addEventListener("change", () => {
 
@@ -1288,75 +1466,91 @@ $("state").addEventListener("change", () => {
         ? states[name]
         : "";
 
-    updateAll();
+    clearErrors();
+
 });
 
 $("stateRate").addEventListener(
     "input",
-    updateAll
+    clearErrors
 );
+
+// FORMAT INPUTS
 
 $("gp").addEventListener("input", () => {
 
     formatCurrencyInput($("gp"));
-    updateCommission();
+    clearErrors();
+
 });
 
 $("goal").addEventListener("input", () => {
 
     formatCurrencyInput($("goal"));
-    updateRoadmap();
+    clearErrors();
+
 });
-
-[...targetIDs, ...escalatorIDs].forEach(id => {
-
-    $(id).addEventListener(
-        "change",
-        updateCommission
-    );
-});
-
-$("period").addEventListener(
-    "change",
-    updateRoadmap
-);
 
 $("afterTax").addEventListener(
     "change",
-    updateRoadmap
+    clearErrors
 );
 
 // CALCULATE BUTTON
 
 $("calculateButton").addEventListener("click", () => {
 
+    clearErrors();
+
     if (read("gp") === null) {
 
+        showError(
+            "commissionError",
+            "Enter a valid gross profit amount."
+        );
+
         $("gp").focus();
+
         return;
+
     }
 
     if (getStateRate() === null) {
 
+        showError(
+            "commissionError",
+            "Select a state and enter a valid tax rate."
+        );
+
         $("state").focus();
+
         return;
+
     }
 
     updateCommission();
 
-    document.activeElement.blur();
+    showResults("commission");
 
-    scrollToResults("commissionResults");
 });
 
 // FIND ROUTES BUTTON
 
 $("findRoutesButton").addEventListener("click", () => {
 
+    clearErrors();
+
     if (!read("goal")) {
 
+        showError(
+            "roadmapError",
+            "Enter a valid commission goal."
+        );
+
         $("goal").focus();
+
         return;
+
     }
 
     if (
@@ -1364,15 +1558,21 @@ $("findRoutesButton").addEventListener("click", () => {
         getStateRate() === null
     ) {
 
+        showError(
+            "roadmapError",
+            "Select a state and enter a valid tax rate."
+        );
+
         $("state").focus();
+
         return;
+
     }
 
     updateRoadmap();
 
-    document.activeElement.blur();
+    showResults("roadmap");
 
-    scrollToResults("roadmapResults");
 });
 
 // TAB NAVIGATION
@@ -1384,6 +1584,17 @@ $("commissionTab").addEventListener("click", () => {
 
     $("commissionTab").classList.add("active");
     $("roadmapTab").classList.remove("active");
+
+    $("commissionTab").setAttribute(
+        "aria-pressed", "true"
+    );
+
+    $("roadmapTab").setAttribute(
+        "aria-pressed", "false"
+    );
+
+    clearErrors();
+
 });
 
 $("roadmapTab").addEventListener("click", () => {
@@ -1393,6 +1604,17 @@ $("roadmapTab").addEventListener("click", () => {
 
     $("commissionTab").classList.remove("active");
     $("roadmapTab").classList.add("active");
+
+    $("commissionTab").setAttribute(
+        "aria-pressed", "false"
+    );
+
+    $("roadmapTab").setAttribute(
+        "aria-pressed", "true"
+    );
+
+    clearErrors();
+
 });
 
 // CLEAR BUTTONS
@@ -1404,19 +1626,46 @@ $("clearCommission").addEventListener("click", () => {
     [...targetIDs, ...escalatorIDs].forEach(id => {
 
         $(id).checked = false;
+
     });
 
-    updateCommission();
+    clearErrors();
+
 });
 
 $("clearRoadmap").addEventListener("click", () => {
 
     $("goal").value = "";
 
-    updateRoadmap();
+    clearErrors();
+
 });
 
-updateAll();
+// ENTER KEY SUPPORT
+
+$("gp").addEventListener("keydown", event => {
+
+    if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        $("calculateButton").click();
+
+    }
+
+});
+
+$("goal").addEventListener("keydown", event => {
+
+    if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        $("findRoutesButton").click();
+
+    }
+
+});
 
 </script>
 
