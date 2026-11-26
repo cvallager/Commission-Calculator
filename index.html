@@ -510,7 +510,7 @@ footer {
 
 <div id="roadmapResults">
 
-    <div id="routes" class="muted">
+    <div id="routes" class="muted"></div>
 
 </div>
 
@@ -1005,12 +1005,9 @@ function updateRoadmap() {
     const box = $("routes");
 
     if (!rawGoal) {
-
-        box.textContent =
-            "Enter your commission goal.";
-
-        return;
-    }
+    box.textContent = "";
+    return;
+}
 
     if (afterTax && getStateRate() === null) {
 
