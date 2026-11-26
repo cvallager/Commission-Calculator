@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Commission Calculator</title>
 
 <style>
 :root {
     color-scheme: dark;
-    --background: #0f1117;
-    --panel: #1b1e27;
-    --border: #343844;
-    --text: #f5f5f5;
-    --muted: #a1a1aa;
-    --accent: #22c55e;
+    --background: #101010;
+    --panel: #1A1A1A;
+    --border: #303030;
+    --text: #F5F5F5;
+    --muted: #A3A3A3;
+    --accent: #CD040B;
+    --accent-hover: #E0050D;
 }
 
 * {
@@ -22,76 +22,101 @@
 
 html {
     scroll-behavior: smooth;
+    scrollbar-color: #454545 var(--background);
 }
 
 body {
     margin: 0;
-    padding: 24px 16px;
+    padding: 32px 20px;
     background: var(--background);
     color: var(--text);
-    font-family: Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont,
+                 "Segoe UI Variable", "Segoe UI",
+                 system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
 .container {
-    max-width: 750px;
-    margin: auto;
-}
-
-h1 {
-    font-size: 28px;
-    text-align: center;
-    margin: 12px 0 28px;
+    max-width: 720px;
+    margin: 0 auto;
 }
 
 h3 {
-    font-size: 18px;
-    margin: 24px 0 12px;
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 28px 0 12px;
 }
 
 .panel, .result {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 22px;
-    margin-bottom: 18px;
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 16px;
 }
 
 .tabs {
     display: flex;
-    gap: 10px;
-    margin-bottom: 18px;
+    gap: 6px;
+    padding: 5px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 20px;
 }
 
 button {
-    background: var(--panel);
+    background: #252525;
     color: var(--text);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 15px 20px;
-    font-size: 16px;
-    font-weight: bold;
+    border-radius: 10px;
+    padding: 14px 22px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
+    transition: background 160ms ease,
+                border-color 160ms ease,
+                transform 100ms ease;
 }
 
 button:hover {
-    opacity: 0.85;
+    background: #333333;
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 .tabs button {
     flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--muted);
 }
 
-button.active, button.primary {
+button.active,
+button.primary {
     background: var(--accent);
-    color: #08140c;
+    color: #FFFFFF;
     border-color: var(--accent);
+}
+
+button.active:hover,
+button.primary:hover {
+    background: var(--accent-hover);
 }
 
 .actions {
     display: flex;
-    gap: 10px;
-    margin-top: 24px;
+    gap: 12px;
+    margin-top: 28px;
 }
 
 .actions .primary {
@@ -102,50 +127,69 @@ input[type="text"],
 input[type="number"],
 select {
     width: 100%;
-    padding: 15px;
-    margin-top: 8px;
-    margin-bottom: 18px;
-    background: var(--background);
+    min-height: 52px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    background: #121212;
     color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    font-size: 17px;
+    border: 1px solid #383838;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
     outline: none;
+    transition: border-color 160ms ease,
+                box-shadow 160ms ease;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(205, 4, 11, 0.12);
+}
+
+button:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
 }
 
 input:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 label {
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 550;
 }
 
 .check-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 56px;
-    gap: 12px;
-    border-bottom: 1px solid var(--border);
+    min-height: 58px;
+    gap: 16px;
+    border-bottom: 1px solid #2C2C2C;
     cursor: pointer;
+    font-weight: 500;
 }
 
 input[type="checkbox"] {
     appearance: none;
     -webkit-appearance: none;
-    width: 27px;
-    height: 27px;
-    border: 2px solid #777b88;
-    border-radius: 7px;
-    background: var(--background);
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    border: 1.5px solid #626262;
+    border-radius: 6px;
+    background: #121212;
     position: relative;
     cursor: pointer;
     flex-shrink: 0;
+    transition: background 150ms ease,
+                border-color 150ms ease;
 }
 
 input[type="checkbox"]:checked {
@@ -159,65 +203,94 @@ input[type="checkbox"]:checked::after {
     left: 7px;
     top: 3px;
     width: 6px;
-    height: 12px;
-    border: solid #08140c;
-    border-width: 0 3px 3px 0;
+    height: 11px;
+    border: solid #FFFFFF;
+    border-width: 0 2px 2px 0;
     transform: rotate(45deg);
 }
 
+.result {
+    border-top: 3px solid var(--accent);
+}
+
 .big {
-    font-size: 38px;
-    font-weight: bold;
-    color: var(--accent);
-    margin: 8px 0 18px;
+    font-size: clamp(32px, 7vw, 48px);
+    font-weight: 700;
+    letter-spacing: -1.8px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    margin: 6px 0 20px;
     overflow-wrap: anywhere;
+    line-height: 1.2;
 }
 
 .medium {
-    font-size: 27px;
-    font-weight: bold;
-    margin: 8px 0 18px;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    font-variant-numeric: tabular-nums;
+    margin: 6px 0 20px;
 }
 
 .muted {
     color: var(--muted);
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 450;
 }
 
 .line {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    padding: 10px 0;
+    gap: 16px;
+    padding: 11px 0;
+    font-size: 14px;
+}
+
+.line span {
+    color: var(--muted);
 }
 
 .line strong {
     text-align: right;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 hr {
     border: none;
     border-top: 1px solid var(--border);
-    margin: 16px 0;
+    margin: 18px 0;
 }
 
 details {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px;
+    border-radius: 14px;
+    padding: 20px;
     margin-bottom: 12px;
+}
+
+details[open] {
+    border-color: #454545;
 }
 
 summary {
     cursor: pointer;
-    line-height: 1.6;
+    line-height: 1.7;
+}
+
+summary strong {
+    font-weight: 600;
+}
+
+summary::marker {
+    color: var(--accent);
 }
 
 #commissionResults,
 #roadmapResults {
-    scroll-margin-top: 20px;
+    scroll-margin-top: 24px;
 }
 
 [hidden] {
@@ -225,29 +298,37 @@ summary {
 }
 
 footer {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.7;
-    margin-top: 24px;
+    font-size: 11px;
+    color: #858585;
+    line-height: 1.8;
+    margin: 28px 8px;
 }
 
 @media (max-width: 480px) {
-    .panel, .result {
-        padding: 18px;
+    body {
+        padding: 20px 14px;
     }
 
-    .big {
-        font-size: 32px;
+    .panel, .result {
+        padding: 20px;
+    }
+
+    .medium {
+        font-size: 26px;
     }
 
     .line {
-        font-size: 14px;
+        font-size: 13px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
+    }
+
+    * {
+        transition: none !important;
     }
 }
 </style>
