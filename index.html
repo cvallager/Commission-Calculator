@@ -1363,35 +1363,7 @@ function updateRoadmap() {
                 : money(result.stateTax)
         );
 
-        html += '<h3>Target options</h3>';
-
-        html += combinations(
-            targetNames,
-            route.targets
-        );
-
-        html += '<h3>Escalator options</h3>';
-
-        html += route.targets === 0
-            ? "Any combination, including none."
-            : combinations(
-                escalatorNames,
-                route.escalators
-            );
-
-        if (
-            route.targets > 0 &&
-            route.escalators === 2
-        ) {
-
-            html += '<p class="muted">' +
-                'Any listed pair qualifies. ' +
-                'Additional escalators do not ' +
-                'increase commission.</p>';
-
-        }
-
-        html += '</details>';
+                html += '</details>';
 
     });
 
