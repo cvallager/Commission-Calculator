@@ -101,6 +101,11 @@ button:active {
     color: var(--muted);
 }
 
+.tabs button:not(.active):hover {
+    background: #252525;
+    color: var(--text);
+}
+    
 button.active,
 button.primary {
     background: var(--accent);
@@ -134,7 +139,6 @@ button.primary:hover {
 }
 
 input[type="text"],
-input[type="number"],
 select {
     width: 100%;
     min-height: 52px;
@@ -164,10 +168,6 @@ button:focus-visible,
 summary:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 4px;
-}
-
-input:disabled {
-    opacity: 0.4;
 }
 
 label {
@@ -240,6 +240,7 @@ input[type="checkbox"]:checked::after {
     letter-spacing: -0.8px;
     font-variant-numeric: tabular-nums;
     margin: 6px 0 20px;
+    overflow-wrap: anywhere;
 }
 
 .muted {
@@ -296,16 +297,6 @@ summary strong {
 
 summary::marker {
     color: var(--accent);
-}
-
-.option {
-    padding: 9px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-}
-
-.option:last-child {
-    border-bottom: none;
 }
 
 .error {
@@ -386,17 +377,6 @@ footer {
         <select id="state">
             <option value="">Select your state</option>
         </select>
-
-        <label for="stateRate">
-            Estimated state income tax (%)
-        </label>
-
-        <input type="number"
-               id="stateRate"
-               min="0"
-               max="30"
-               step="0.01"
-               disabled>
 
     </div>
 
@@ -493,7 +473,7 @@ footer {
                     Monthly
                 </option>
 
-                <option value="2">
+                <option value="2" selected>
                     Per paycheck
                 </option>
 
@@ -671,12 +651,13 @@ footer {
 
 <footer>
 
-    Federal tax includes estimated federal income tax,
-    Social Security and Medicare. Income tax rates are
-    unverified planning estimates. Payroll taxes use 2026
-    parameters. Excludes local taxes, benefits and base pay
-    guarantees. This calculator does not collect or transmit
-    your inputs.
+    Tax estimates use 2026 federal and state income tax
+    brackets for Single filing status, with income annualized
+    across 24 pay periods. Federal tax includes Social
+    Security and Medicare. Excludes deductions, exemptions,
+    tax credits, local taxes, benefits and base pay guarantees.
+    Actual paycheck withholding may differ. This calculator
+    does not collect or transmit your inputs.
 
 </footer>
 
@@ -690,71 +671,428 @@ const $ = id => document.getElementById(id);
 
 // STATE TAX ESTIMATES
 
+// 2026 STATE INCOME TAX BRACKETS
+// Single filing status
+// No deductions, exemptions or tax credits
+
 const states = {
-    "Alabama": 5,
-    "Alaska": 0,
-    "Arizona": 2.5,
-    "Arkansas": 3.7,
-    "California": 6.6,
-    "Colorado": 4.4,
-    "Connecticut": 6.99,
-    "Delaware": 6.6,
-    "District of Columbia": 10.75,
-    "Florida": 0,
-    "Georgia": 5.19,
-    "Hawaii": 11,
-    "Idaho": 5.3,
-    "Illinois": 4.95,
-    "Indiana": 2.95,
-    "Iowa": 3.8,
-    "Kansas": 5,
-    "Kentucky": 3.5,
-    "Louisiana": 3,
-    "Maine": 5,
-    "Maryland": 6.5,
-    "Massachusetts": 5,
-    "Michigan": 4.25,
-    "Minnesota": 6.25,
-    "Mississippi": 4,
-    "Missouri": 4.7,
-    "Montana": 5,
-    "Nebraska": 5,
-    "Nevada": 0,
-    "New Hampshire": 0,
-    "New Jersey": 10.75,
-    "New Mexico": 5.9,
-    "New York": 11.7,
-    "North Carolina": 3.99,
-    "North Dakota": 1.5,
-    "Ohio": 3.5,
-    "Oklahoma": 4.5,
-    "Oregon": 8,
-    "Pennsylvania": 3.07,
-    "Rhode Island": 5.99,
-    "South Carolina": 6,
-    "South Dakota": 0,
-    "Tennessee": 0,
-    "Texas": 0,
-    "Utah": 4.5,
-    "Vermont": 6,
-    "Virginia": 5.75,
-    "Washington": 0,
-    "West Virginia": 4.58,
-    "Wisconsin": 7.65,
-    "Wyoming": 0
+
+    "Alabama": [
+        [0, 2],
+        [500, 4],
+        [3000, 5]
+    ],
+
+    "Alaska": [
+        [0, 0]
+    ],
+
+    "Arizona": [
+        [0, 2.5]
+    ],
+
+    "Arkansas": [
+        [0, 2],
+        [4600, 3.9]
+    ],
+
+    "California": [
+        [0, 1],
+        [11079, 2],
+        [26264, 4],
+        [41452, 6],
+        [57542, 8],
+        [72724, 9.3],
+        [371479, 10.3],
+        [445771, 11.3],
+        [742953, 12.3],
+        [1000000, 13.3]
+    ],
+
+    "Colorado": [
+        [0, 4.4]
+    ],
+
+    "Connecticut": [
+        [0, 2],
+        [10000, 4.5],
+        [50000, 5.5],
+        [100000, 6],
+        [200000, 6.5],
+        [250000, 6.9],
+        [500000, 6.99]
+    ],
+
+    "Delaware": [
+        [0, 0],
+        [2000, 2.2],
+        [5000, 3.9],
+        [10000, 4.8],
+        [20000, 5.2],
+        [25000, 5.55],
+        [60000, 6.6]
+    ],
+
+    "District of Columbia": [
+        [0, 4],
+        [10000, 6],
+        [40000, 6.5],
+        [60000, 8.5],
+        [250000, 9.25],
+        [500000, 9.75],
+        [1000000, 10.75]
+    ],
+
+    "Florida": [
+        [0, 0]
+    ],
+
+    "Georgia": [
+        [0, 5.19]
+    ],
+
+    "Hawaii": [
+        [0, 1.4],
+        [9600, 3.2],
+        [14400, 5.5],
+        [19200, 6.4],
+        [24000, 6.8],
+        [36000, 7.2],
+        [48000, 7.6],
+        [125000, 7.9],
+        [175000, 8.25],
+        [225000, 9],
+        [275000, 10],
+        [325000, 11]
+    ],
+
+    "Idaho": [
+        [0, 0],
+        [4811, 5.3]
+    ],
+
+    "Illinois": [
+        [0, 4.95]
+    ],
+
+    "Indiana": [
+        [0, 2.95]
+    ],
+
+    "Iowa": [
+        [0, 3.8]
+    ],
+
+    "Kansas": [
+        [0, 5.2],
+        [23000, 5.58]
+    ],
+
+    "Kentucky": [
+        [0, 3.5]
+    ],
+
+    "Louisiana": [
+        [0, 3]
+    ],
+
+    "Maine": [
+        [0, 5.8],
+        [27399, 6.75],
+        [64849, 7.15]
+    ],
+
+    "Maryland": [
+        [0, 2],
+        [1000, 3],
+        [2000, 4],
+        [3000, 4.75],
+        [100000, 5],
+        [125000, 5.25],
+        [150000, 5.5],
+        [250000, 5.75],
+        [500000, 6.25],
+        [1000000, 6.5]
+    ],
+
+    "Massachusetts": [
+        [0, 5],
+        [1083150, 9]
+    ],
+
+    "Michigan": [
+        [0, 4.25]
+    ],
+
+    "Minnesota": [
+        [0, 5.35],
+        [33310, 6.8],
+        [109430, 7.85],
+        [203150, 9.85]
+    ],
+
+    "Mississippi": [
+        [0, 0],
+        [10000, 4]
+    ],
+
+    "Missouri": [
+        [0, 0],
+        [1348, 2],
+        [2696, 2.5],
+        [4044, 3],
+        [5392, 3.5],
+        [6740, 4],
+        [8088, 4.5],
+        [9436, 4.7]
+    ],
+
+    "Montana": [
+        [0, 4.7],
+        [47500, 5.65]
+    ],
+
+    "Nebraska": [
+        [0, 2.46],
+        [4130, 3.51],
+        [24760, 4.55]
+    ],
+
+    "Nevada": [
+        [0, 0]
+    ],
+
+    "New Hampshire": [
+        [0, 0]
+    ],
+
+    "New Jersey": [
+        [0, 1.4],
+        [20000, 1.75],
+        [35000, 3.5],
+        [40000, 5.53],
+        [75000, 6.37],
+        [500000, 8.97],
+        [1000000, 10.75]
+    ],
+
+    "New Mexico": [
+        [0, 1.5],
+        [5500, 3.2],
+        [16500, 4.3],
+        [33500, 4.7],
+        [66500, 4.9],
+        [210000, 5.9]
+    ],
+
+    "New York": [
+        [0, 3.9],
+        [8500, 4.4],
+        [11700, 5.15],
+        [13900, 5.4],
+        [80650, 5.9],
+        [215400, 6.85],
+        [1077550, 9.65],
+        [5000000, 10.3],
+        [25000000, 10.9]
+    ],
+
+    "North Carolina": [
+        [0, 3.99]
+    ],
+
+    "North Dakota": [
+        [0, 0],
+        [48475, 1.95],
+        [244825, 2.5]
+    ],
+
+    "Ohio": [
+        [0, 0],
+        [26050, 2.75]
+    ],
+
+    "Oklahoma": [
+        [0, 0],
+        [3750, 2.5],
+        [4900, 3.5],
+        [7200, 4.5]
+    ],
+
+    "Oregon": [
+        [0, 4.75],
+        [4550, 6.75],
+        [11400, 8.75],
+        [125000, 9.9]
+    ],
+
+    "Pennsylvania": [
+        [0, 3.07]
+    ],
+
+    "Rhode Island": [
+        [0, 3.75],
+        [82050, 4.75],
+        [186450, 5.99]
+    ],
+
+    "South Carolina": [
+        [0, 0],
+        [3640, 3],
+        [18230, 6]
+    ],
+
+    "South Dakota": [
+        [0, 0]
+    ],
+
+    "Tennessee": [
+        [0, 0]
+    ],
+
+    "Texas": [
+        [0, 0]
+    ],
+
+    "Utah": [
+        [0, 4.5]
+    ],
+
+    "Vermont": [
+        [0, 3.35],
+        [49400, 6.6],
+        [119700, 7.6],
+        [249700, 8.75]
+    ],
+
+    "Virginia": [
+        [0, 2],
+        [3000, 3],
+        [5000, 5],
+        [17000, 5.75]
+    ],
+
+    "Washington": [
+        [0, 0]
+    ],
+
+    "West Virginia": [
+        [0, 2.22],
+        [10000, 2.96],
+        [25000, 3.33],
+        [40000, 4.44],
+        [60000, 4.82]
+    ],
+
+    "Wisconsin": [
+        [0, 3.5],
+        [15110, 4.4],
+        [51950, 5.3],
+        [332720, 7.65]
+    ],
+
+    "Wyoming": [
+        [0, 0]
+    ]
+
 };
 
-// FEDERAL INCOME TAX ESTIMATES
+// 2026 FEDERAL INCOME TAX BRACKETS
+// Single filing status
+// No deductions or exemptions
 
-const federalBands = [
-    [0, 15000, 0.6],
-    [15000, 30000, 1.9],
-    [30000, 50000, 4.3],
-    [50000, 100000, 7.4],
-    [100000, 200000, 10.7],
-    [200000, 500000, 16.3],
-    [500000, Infinity, 25.5]
+const federalBrackets = [
+    [0, 10],
+    [12400, 12],
+    [50400, 22],
+    [105700, 24],
+    [201775, 32],
+    [256225, 35],
+    [640600, 37]
 ];
+
+// 2026 FEDERAL PAYROLL TAX RATES
+
+const payrollTaxes = {
+
+    socialSecurityRate: 0.062,
+
+    socialSecurityCap: 184500,
+
+    medicareRate: 0.0145,
+
+    additionalMedicareRate: 0.009,
+
+    additionalMedicareThreshold: 200000
+
+};
+
+// PROGRESSIVE TAX ENGINE
+
+function progressiveTax(income, brackets) {
+
+    let tax = 0;
+
+    income = Math.max(0, income);
+
+    for (
+        let i = 0;
+        i < brackets.length;
+        i++
+    ) {
+
+        const lower = brackets[i][0];
+
+        const rate = brackets[i][1] / 100;
+
+        const upper =
+            i + 1 < brackets.length
+                ? brackets[i + 1][0]
+                : Infinity;
+
+        const taxable = Math.max(
+            0,
+            Math.min(income, upper) - lower
+        );
+
+        tax += taxable * rate;
+
+    }
+
+    return tax;
+
+}
+
+    function calculateFederalTax(annual) {
+
+    const federalIncomeTax =
+        progressiveTax(
+            annual,
+            federalBrackets
+        );
+
+    const socialSecurity =
+        Math.min(
+            annual,
+            payrollTaxes.socialSecurityCap
+        ) * payrollTaxes.socialSecurityRate;
+
+    const medicare =
+        annual * payrollTaxes.medicareRate;
+
+    const additionalMedicare =
+        Math.max(
+            0,
+            annual -
+            payrollTaxes.additionalMedicareThreshold
+        ) * payrollTaxes.additionalMedicareRate;
+
+    return federalIncomeTax +
+           socialSecurity +
+           medicare +
+           additionalMedicare;
+
+}
 
 // COMMISSION TIERS IN CENTS
 
@@ -816,7 +1154,34 @@ function money(value) {
 
 function round(value) {
 
-    return Math.round(value * 100) / 100;
+    const scaled = value * 100;
+
+    return Math.round(
+        scaled +
+        Number.EPSILON * Math.abs(scaled)
+    ) / 100;
+
+}
+    
+function monthlyToPaycheck(amount) {
+
+    const cents = Math.round(amount * 100);
+
+    return Math.floor(cents / 2) / 100;
+
+}
+
+function paycheckDisplay(amount) {
+
+    const cents = Math.round(amount * 100);
+
+    const lower = Math.floor(cents / 2) / 100;
+
+    const upper = Math.ceil(cents / 2) / 100;
+
+    return lower === upper
+        ? money(lower)
+        : money(lower) + "–" + money(upper);
 
 }
 
@@ -824,6 +1189,18 @@ function formatCurrencyInput(input) {
 
     const original = input.value;
 
+    
+        if (
+        /[^0-9$.,\s]/.test(original) ||
+        (original.match(/\./g) || []).length > 1 ||
+        (original.match(/\$/g) || []).length > 1 ||
+        original.trim().slice(1).includes("$")
+    ) {
+
+        input.value = "";
+        return;
+
+    }
     const cursor =
         input.selectionStart ?? original.length;
 
@@ -914,21 +1291,16 @@ function read(id) {
 
 }
 
-function getStateRate() {
+function getStateBrackets() {
 
-    const rate = read("stateRate");
+    const name = $("state").value;
 
-    if (
-        !$("state").value ||
-        rate === null ||
-        rate > 30
-    ) {
-
-        return null;
-
-    }
-
-    return rate;
+    return Object.prototype.hasOwnProperty.call(
+        states,
+        name
+    )
+        ? states[name]
+        : null;
 
 }
 
@@ -953,45 +1325,36 @@ function finalRate(base, targets, escalators) {
 
 }
 
-function calculate(gpCents, rate) {
+    function calculate(gpCents, rate) {
 
     const gross =
-        Math.round(gpCents * rate / 100) / 100;
+        round(gpCents * rate / 10000);
 
-    const annual = round(gross * 12);
-
-    const band = federalBands.find(b =>
-        annual >= b[0] &&
-        annual < b[1]
-    );
-
-    const federalIncomeTax =
-        annual * band[2] / 100;
-
-    const socialSecurity =
-        Math.min(annual, 184500) * 0.062;
-
-    const medicare =
-        annual * 0.0145 +
-        Math.max(0, annual - 200000) * 0.009;
-
+    const annual =
+        round(gross * 12);
+    
     const federalTax = round(
-        (
-            federalIncomeTax +
-            socialSecurity +
-            medicare
-        ) / 12
+        calculateFederalTax(annual) / 12
     );
 
-    const stateRate = getStateRate();
+    const stateBrackets = getStateBrackets();
 
-    const stateTax = stateRate === null
+    const stateTax = stateBrackets === null
         ? null
-        : round(gross * stateRate / 100);
+        : round(
+            progressiveTax(
+                annual,
+                stateBrackets
+            ) / 12
+        );
 
     const net = stateTax === null
         ? null
-        : round(gross - federalTax - stateTax);
+        : round(
+            gross -
+            federalTax -
+            stateTax
+        );
 
     return {
         gross,
@@ -1003,6 +1366,42 @@ function calculate(gpCents, rate) {
 
 }
 
+    function continuousCommission(
+    gpCents,
+    rate,
+    afterTax,
+    perPaycheck
+) {
+
+    const gross = gpCents * rate / 10000;
+
+    let amount = gross;
+
+    if (afterTax) {
+
+        const annual = gross * 12;
+
+        const federalTax =
+            calculateFederalTax(annual);
+
+        const stateTax =
+            progressiveTax(
+                annual,
+                getStateBrackets()
+            );
+
+        amount = gross - (
+            federalTax +
+            stateTax
+        ) / 12;
+
+    }
+
+    return perPaycheck
+        ? amount / 2
+        : amount;
+
+}
 // GENERATE COMMISSION RESULTS
 
 function updateCommission() {
@@ -1045,9 +1444,9 @@ function updateCommission() {
         : money(result.net);
 
     $("netPaycheck").textContent =
-        result.net === null
-        ? "—"
-        : money(result.net / 2);
+    result.net === null
+    ? "—"
+    : money(monthlyToPaycheck(result.net));
 
 }
 
@@ -1132,12 +1531,12 @@ function updateRoadmap() {
 
     if (
         afterTax &&
-        getStateRate() === null
+        getStateBrackets() === null
     ) return;
 
-    const goal = round(
-        rawGoal * Number($("period").value)
-    );
+    const perPaycheck = $("period").value === "2";
+
+const goal = round(rawGoal);
 
     const results = [];
 
@@ -1166,83 +1565,65 @@ function updateRoadmap() {
 
                 if (rate === 0) continue;
 
-                const value = cents => {
+    const value = cents => {
 
-                    const result = calculate(
-                        cents,
-                        rate
-                    );
+    const result = calculate(cents, rate);
 
-                    return afterTax
-                        ? result.net
-                        : result.gross;
+    const amount = afterTax
+        ? result.net
+        : result.gross;
 
-                };
+    return perPaycheck
+        ? monthlyToPaycheck(amount)
+        : amount;
 
-                let best = null;
+};
 
-                for (const band of federalBands) {
+const continuous = cents =>
+    continuousCommission(
+        cents,
+        rate,
+        afterTax,
+        perPaycheck
+    );
 
-                    const low = lowerBound(
-                        lo,
-                        hi,
-                        cents =>
-                            calculate(cents, rate)
-                            .annual >= band[0]
-                    );
+const tolerance = 0.05;
 
-                    const high =
-                        band[1] === Infinity
-                        ? hi
-                        : lowerBound(
-                            lo,
-                            hi,
-                            cents =>
-                                calculate(cents, rate)
-                                .annual >= band[1]
-                        ) - 1;
+const start = lowerBound(
+    lo,
+    hi,
+    cents =>
+        continuous(cents) >=
+        goal - tolerance
+);
 
-                    if (
-                        low > high ||
-                        low > hi
-                    ) continue;
+const end = Math.min(
+    hi,
+    lowerBound(
+        lo,
+        hi,
+        cents =>
+            continuous(cents) >=
+            goal + tolerance
+    )
+);
 
-                    if (
-                        value(high) + 0.02 < goal
-                    ) continue;
+let best = null;
 
-                    const start = lowerBound(
-                        low,
-                        high,
-                        cents =>
-                            value(cents) >= goal - 0.02
-                    );
+for (
+    let cents = start;
+    cents <= end;
+    cents++
+) {
 
-                    for (
-                        let cents = start;
-                        cents <= high &&
-                        cents <= start + 500;
-                        cents++
-                    ) {
+    if (value(cents) >= goal) {
 
-                        if (value(cents) >= goal) {
+        best = cents;
+        break;
 
-                            if (
-                                best === null ||
-                                cents < best
-                            ) {
+    }
 
-                                best = cents;
-
-                            }
-
-                            break;
-
-                        }
-
-                    }
-
-                }
+}
 
                 if (best !== null) {
 
@@ -1290,7 +1671,9 @@ function updateRoadmap() {
         ' qualifying routes' +
         '</div>' +
         line(
-            "Monthly commission goal",
+            perPaycheck
+                ? "Per-paycheck commission goal"
+                : "Monthly commission goal",
             money(goal)
         ) +
         '</div>';
@@ -1326,41 +1709,15 @@ function updateRoadmap() {
         html += line(
             "Net monthly commission",
             result.net === null
-                ? "—"
+                ? "Select a state."
                 : money(result.net)
         );
 
         html += line(
             "Net per paycheck",
             result.net === null
-                ? "—"
-                : money(result.net / 2)
-        );
-
-        if (!afterTax) {
-
-            html += line(
-                "Before-tax commission",
-                money(result.gross)
-            );
-
-        }
-
-        html += line(
-            "Final CP",
-            route.rate + "%"
-        );
-
-        html += line(
-            "Federal tax",
-            money(result.federalTax)
-        );
-
-        html += line(
-            "State income tax",
-            result.stateTax === null
-                ? "—"
-                : money(result.stateTax)
+                ? "Select a state."
+                : money(monthlyToPaycheck(result.net))
         );
 
                 html += '</details>';
@@ -1428,25 +1785,8 @@ function clearErrors() {
 
 // STATE SELECTION
 
-$("state").addEventListener("change", () => {
-
-    const name = $("state").value;
-
-    $("stateRate").disabled = !name;
-
-    $("stateRate").value = name
-        ? states[name]
-        : "";
-
-    clearErrors();
-
-});
-
-$("stateRate").addEventListener(
-    "input",
-    clearErrors
-);
-
+$("state").addEventListener("change", clearErrors);
+    
 // FORMAT INPUTS
 
 $("gp").addEventListener("input", () => {
@@ -1464,6 +1804,11 @@ $("goal").addEventListener("input", () => {
 });
 
 $("afterTax").addEventListener(
+    "change",
+    clearErrors
+);
+
+$("period").addEventListener(
     "change",
     clearErrors
 );
@@ -1487,11 +1832,11 @@ $("calculateButton").addEventListener("click", () => {
 
     }
 
-    if (getStateRate() === null) {
+    if (getStateBrackets() === null) {
 
         showError(
             "commissionError",
-            "Select a state and enter a valid tax rate."
+            "Select your state"
         );
 
         $("state").focus();
@@ -1527,12 +1872,12 @@ $("findRoutesButton").addEventListener("click", () => {
 
     if (
         $("afterTax").checked &&
-        getStateRate() === null
+        getStateBrackets() === null
     ) {
 
         showError(
             "roadmapError",
-            "Select a state and enter a valid tax rate."
+            "Select your state"
         );
 
         $("state").focus();
