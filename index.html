@@ -311,41 +311,22 @@ details {
     padding: 20px;
     margin-bottom: 12px;
 }
-
+    
 details[open] {
     border-color: #454545;
 }
-
+    
 summary {
     cursor: pointer;
     line-height: 1.7;
 }
-
+    
 summary strong {
     font-weight: 600;
 }
-
+    
 summary::marker {
     color: var(--accent);
-}
-
-details {
-    interpolate-size: allow-keywords;
-}
-
-details::details-content {
-    height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition:
-        height 500ms cubic-bezier(0.52, 0, 0.27, 0.66),
-        opacity 500ms ease,
-        content-visibility 500ms allow-discrete;
-}
-
-details[open]::details-content {
-    height: auto;
-    opacity: 1;
 }
     
 .error {
@@ -392,11 +373,7 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-    *,
-    *::before,
-    *::after,
-    *::details-content {
+    *, *::before, *::after {
         transition: none !important;
     }
 }
@@ -1579,7 +1556,79 @@ function line(label, value) {
         '</strong></div>';
 
 }
+    
+// ROADMAP DROPDOWN ANIMATION
 
+function animateDropdowns(container) {
+    const duration = 500;
+    const easing = "cubic-bezier(0.52, 0, 0.27, 0.66)";
+
+    container.querySelectorAll("details").forEach(details => {
+        const summary = details.querySelector("summary");
+
+        let animation = null;
+        let expanded = details.open;
+
+        summary.addEventListener("click", event => {
+            event.preventDefault();
+
+            expanded = !expanded;
+
+            const startHeight =
+                details.getBoundingClientRect().height;
+
+            if (animation) {
+                animation.cancel();
+                animation = null;
+            }
+
+            if (
+                window.matchMedia(
+                    "(prefers-reduced-motion: reduce)"
+                ).matches ||
+                typeof details.animate !== "function"
+            ) {
+                details.open = expanded;
+                details.style.height = "";
+                details.style.overflow = "";
+                return;
+            }
+
+            details.style.height = "";
+            details.open = expanded;
+
+            const endHeight =
+                details.getBoundingClientRect().height;
+
+            details.open = true;
+            details.style.overflow = "hidden";
+            details.style.height = startHeight + "px";
+
+            animation = details.animate(
+                [
+                    { height: startHeight + "px" },
+                    { height: endHeight + "px" }
+                ],
+                {
+                    duration: duration,
+                    easing: easing,
+                    fill: "forwards"
+                }
+            );
+
+            animation.onfinish = () => {
+                details.open = expanded;
+                animation.cancel();
+                animation = null;
+                details.style.height = "";
+                details.style.overflow = "";
+            };
+        });
+    });
+}
+
+//GENERATE ROADMAP RESULTS
+    
 function updateRoadmap() {
 
     const rawGoal = read("goal");
@@ -1786,7 +1835,7 @@ for (
     });
 
     box.innerHTML = html;
-
+    animateDropdowns(box);
 }
 
 // VIEW NAVIGATION
