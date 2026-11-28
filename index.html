@@ -62,6 +62,8 @@ h3 {
 }
 
 .tabs {
+    position: relative;
+    isolation: isolate;
     display: flex;
     gap: 6px;
     padding: 5px;
@@ -69,6 +71,24 @@ h3 {
     border: 1px solid var(--border);
     border-radius: 14px;
     margin-bottom: 20px;
+}
+
+.tabs::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 5px;
+    width: calc((100% - 16px) / 2);
+    background: var(--accent);
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: -1;
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabs:has(#roadmapTab.active)::before {
+    transform: translateX(calc(100% + 6px));
 }
 
 button {
@@ -96,9 +116,12 @@ button:active {
 
 .tabs button {
     flex: 1;
+    min-width: 0;
     border: none;
     background: transparent;
     color: var(--muted);
+    transition: color 250ms ease,
+                background 160ms ease;
 }
 
 .tabs button:not(.active):hover {
@@ -106,14 +129,21 @@ button:active {
     color: var(--text);
 }
     
-button.active,
+.tabs button.active {
+    background: transparent;
+    color: #FFFFFF;
+}
+
+.tabs button:active {
+    transform: none;
+}
+
 button.primary {
     background: var(--accent);
     color: #FFFFFF;
     border-color: var(--accent);
 }
 
-button.active:hover,
 button.primary:hover {
     background: var(--accent-hover);
 }
@@ -337,7 +367,9 @@ footer {
 
 @media (prefers-reduced-motion: reduce) {
 
-    * {
+    *,
+    *::before,
+    *::after {
         transition: none !important;
     }
 }
